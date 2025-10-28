@@ -1,0 +1,32 @@
+# .gitignore for panda_management_system
+
+# Personal files
+to_do.txt
+temp/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.python-version
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Data files
+*.db
+*.sqlite3
+logs/
+*.log

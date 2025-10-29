@@ -80,8 +80,9 @@ python main.py
 ## Author
 
 **Max Habibulin**
-🐱 GitHub: [@maxhabibulin](https://github.com/maxhabibulin)
-📧 Email: maxhabibulin@gmail.com
+
+- 🐱 GitHub: [@maxhabibulin](https://github.com/maxhabibulin)
+- 📧 Email: maxhabibulin@gmail.com
 
 ---
 

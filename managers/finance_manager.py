@@ -2,6 +2,8 @@ from data.expenses_data import expenses
 from datetime import datetime
 
 class FinanceManager:
+    # --- Constants ---
+    LINE_SEPARATOR = "-" * 40
     
     # --- Initialization ---
     def __init__(self, services_manager: object, appointments_manager: object):
@@ -16,7 +18,7 @@ class FinanceManager:
 
         for details in self.appointments_manager.appointments.values():
             service_name = details["service_name"]
-            service_data = self.services_manager.get_service_data(service_name)
+            service_data = self.services_manager.get_service_data(service_name) or {}
 
             if service_data and "price" in service_data:
                 income += service_data["price"]
@@ -39,33 +41,34 @@ class FinanceManager:
 
         profit_margin = (net_profit / income * 100) if income > 0 else 0
 
-        status_msg = ("Profitable" if net_profit > 0 else 
-                      "Loss Making" if net_profit < 0 else "Break Even")
+        status_rules = [
+            (net_profit > 0, "🟢", "Profitable"),
+            (net_profit < 0, "🔴", "Loss Making"),
+            (net_profit == 0, "⚪️", "Break Even"),
+        ]
+
+        status_icon, status_msg = next((icon, msg) for cond, icon, msg in status_rules if cond)
+
+
+        efficiency_rules = [
+            (profit_margin > 20, "🚀", "Highly Efficient"),
+            (profit_margin > 10, "✅", "Efficient"),
+            (profit_margin > 0, "⚠️", "Low Efficiency"),
+            (profit_margin == 0, "➖", "Zero Margin"),
+            (profit_margin < 0, "🆘", "Inefficient (Loss)")
+        ]
         
-        status_indic = ("🟢" if net_profit > 0 else 
-                        "🔴" if net_profit < 0 else "⚪️")
-        
-        efficiency_msg = ("Highly Efficient" if profit_margin > 20 else 
-                          "Efficient" if profit_margin > 10 else 
-                          "Low Efficiency" if profit_margin > 0 else
-                          "Zero Margin" if profit_margin == 0 else 
-                          "Inefficient (Loss)")
-        
-        efficiency_indic = ("🚀" if profit_margin > 20 else 
-                          "✅" if profit_margin > 10 else 
-                          "⚠️" if profit_margin > 0 else 
-                          "➖" if profit_margin == 0 else
-                          "🆘")
+        efficiency_icon, efficiency_msg = next((icon, msg) for cond, icon, msg in efficiency_rules if cond)
        
         print(
             f"\n🌸 {field_name} Financial Report 🌸\n"
-            f"{status_indic} Status: {status_msg}\n"
-            f"{efficiency_indic} Productivity: {efficiency_msg}\n"
-            f"{'-'*40}"
+            f"{status_icon} Status: {status_msg}\n"
+            f"{efficiency_icon} Productivity: {efficiency_msg}\n"
+            f"{self.LINE_SEPARATOR}"
             f"\n💰 Total Income:    {income:>10,.2f} {currency}"
             f"\n💸 Total Expenses:  {expenses:>10,.2f} {currency}"
             f"\n💵 Net Profit:      {net_profit:>10,.2f} {currency}"
             f"\n📊 Profit Margin:   {profit_margin:>9.1f}%"
-            f"\n{'-'*40}"
+            f"\n{self.LINE_SEPARATOR}"
             f"\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )

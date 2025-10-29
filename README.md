@@ -31,6 +31,10 @@ panda_management_system/
 │   ├── finance_manager.py
 │   └── recommendations_manager.py
 │
+├── utils/                    # Helper functions
+│   ├── formatters.py
+│   ├── validators.py
+│
 ├── main.py                   # Main program entry point
 └── README.md
 

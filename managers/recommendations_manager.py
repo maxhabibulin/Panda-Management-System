@@ -1,44 +1,24 @@
 from collections import Counter
+from utils.formatters import normalize_name
+from utils.validators import validate_phone_id, validate_positive_int
 
 class RecommendationsManager:
 
-     # --- Constants for message and validation ---
-    SERVICE_NOT_FOUND = "[Service not found]"
+     # --- Constants ---
     APPOINTMENT_DATA_NOT_FOUND = "[Existing appointment data not found]"
-    PROVIDED_NOT_INT = "[Provided argument must be integer]"
-    NEGATIVE_NUM_NOT_ALLOWED = "[Negative number not allowed]"
-    WRONG_ID_NUM_LEN = "[Phone ID must contain exactly 8 digits]"
+    LINE_SEPARATOR = "-" * 47
     
     # --- Initialization ---
     def __init__(self, appointments_manager: object):
         self.appointments_manager = appointments_manager
 
 
-    # --- Utility methods ---
-    def _normalize_name(self, name: str) -> str:
-        if not isinstance(name, str):
-            return " "
-        
-        return name.replace("_", " ").title()
-    
-    def _validate_phone_id(self, phone_id: int) -> str | None:
-        if not isinstance(phone_id, int):
-            return self.PROVIDED_NOT_INT
-        
-        if phone_id < 0:
-            return self.NEGATIVE_NUM_NOT_ALLOWED
-
-        if len(str(phone_id)) != 8:
-            return self.WRONG_ID_NUM_LEN
-        
-        if phone_id not in self.appointments_manager.appointments:
-            return self.APPOINTMENT_DATA_NOT_FOUND
-        
-        return None
-
     # --- Core functionality ---
     def get_popular_services(self, top_n: int = 3) -> list[tuple[str, int]]:
-        if not isinstance(top_n, int) or top_n <= 0:
+        validation_error = validate_positive_int(top_n, "top_n")
+
+        if validation_error:
+            print(validation_error)
             return []
 
         services = [
@@ -54,16 +34,18 @@ class RecommendationsManager:
         return service_counts.most_common(top_n)
     
     def recommend_for_customer(self, phone_id: int) -> None:
-        validation_error = self._validate_phone_id(phone_id)
-
+        validation_error = validate_phone_id(phone_id)
         if validation_error:
             print(validation_error)
             return 
         
+        target_appointment = self.appointments_manager.appointments.get(phone_id)
+        if not target_appointment:
+            return print(self.APPOINTMENT_DATA_NOT_FOUND)
+        
         service_name = "service_name"
         appointments_values = self.appointments_manager.appointments.values() 
 
-        target_appointment = self.appointments_manager.appointments[phone_id]
         target_first_name = target_appointment["first_name"]
         target_last_name = target_appointment["last_name"]
         
@@ -110,14 +92,14 @@ class RecommendationsManager:
             favorite_services = [s for s, _ in self.get_popular_services(3) if s in set(customer_services)]
 
             for service in favorite_services:
-                print(f"⭐ {self._normalize_name(service)}")
+                print(f"⭐ {normalize_name(service)}")
         else:
             for index, service in enumerate(final_recommendations[:5], 1):
                 if service in recommended_from_popular:
-                    print(f"{index}. {self._normalize_name(service)} 🔥")
+                    print(f"{index}. {normalize_name(service)} 🔥")
 
                 else:
-                    print(f"{index}. {self._normalize_name(service)}")
+                    print(f"{index}. {normalize_name(service)}")
 
         print(f"{47 * "-"}")
 
@@ -126,7 +108,7 @@ class RecommendationsManager:
 
         print(
             f"\n⭐️ Recommended Services ⭐️\n"
-            f"{47 * "-"}"
+            f"{self.LINE_SEPARATOR}"
         )
 
         if not popular_services:
@@ -144,8 +126,8 @@ class RecommendationsManager:
 
             percentage = (count / total_bookings) * 100 if total_bookings > 0 else 0
 
-            norm_service_name = self._normalize_name(service)
+            norm_service_name = normalize_name(service)
 
             print(f"{index}. {norm_service_name:<20} (booked {count} {times}, {percentage:.1f}%)")
 
-        print(f"{47 * "-"}")
+        print(self.LINE_SEPARATOR)

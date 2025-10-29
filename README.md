@@ -1,7 +1,7 @@
 # 🐼 Panda Spa Internal Management System (Demo)
 
 This is an **educational Python project** created to practice backend design and object-oriented programming (OOP).
-It simulates the internal management system of a fictional spa center - _Panda Spa_
+It simulates the **internal management system** of a fictional spa center - _Panda Spa_
 
 ---
 
@@ -17,21 +17,24 @@ It simulates the internal management system of a fictional spa center - _Panda S
 
 ## 🧱 Project Structure
 
-- **panda_management_system/**
+```
+panda_management_system/
+│
+├── data/                     # Demo data for services, appointments, and expenses
+│   ├── services_data.py
+│   ├── appointments_data.py
+│   └── expenses_data.py
+│
+├── managers/                 # Core management modules
+│   ├── services_manager.py
+│   ├── appointments_manager.py
+│   ├── finance_manager.py
+│   └── recommendations_manager.py
+│
+├── main.py                   # Main program entry point
+└── README.md
 
-  - main.py # Main program entry
-
-  - **data/** # Demo data for services, appointments, and expenses
-
-    - services_data.py
-    - appointments_data.py
-    - expenses_data.py
-
-  - **managers/** # Core management modules
-    - services_manager.py
-    - appointments_manager.py
-    - finance_manager.py
-    - recommendations_manager.py
+```
 
 ---
 
@@ -39,38 +42,47 @@ It simulates the internal management system of a fictional spa center - _Panda S
 
 1. Clone this repository:
 
-```
-bash
-git clone https://github.com/maxhabibulin/Panda-Management-System
+```bash
+git clone https://github.com/maxhabibulin/Panda-Management-System.git
 cd panda_management_system
 ```
 
 2. (Optional) Create a virtual environment:
 
 ```
+# macOS/Linux
 python3 -m venv .venv
-source .venv/bin/activate  # macOS/Linux
-.venv\Scripts\activate     # Windows
+source .venv/bin/activate
+
+# Windows
+python -m venv .venv
+.venv\Scripts\activate
 ```
 
 3. Run the application:
 
 ```
+
 python main.py
+
 ```
 
 ---
 
 ## 🗒️ Notes
 
-- This is _learning project_ - not intended for production use.
+- This is a **learning project** — not intended for production use.
 - All data is stored in Python dictionaries for simplicity.
-
-* Designed for educational purposes to demonstrate modular structure and clean design.
+- Designed to demonstrate **modular architecture, separation of concerns, and clean OOP principles**.
 
 ---
 
 ## Author
 
-Developed by Max Habibulin
-GitHub: maxhabibulin
+**Max Habibulin**
+🐱 GitHub: [@maxhabibulin](https://github.com/maxhabibulin)
+📧 Email: maxhabibulin@gmail.com
+
+---
+
+![Python](https://img.shields.io/badge/python-3.8+-blue.svg) ![Status](https://img.shields.io/badge/status-demo%20project-green.svg) ![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)

@@ -2,17 +2,16 @@ import copy
 import json
 import data.appointments_data as appointments_data
 from datetime import datetime
+from utils.validators import validate_phone_id
+from utils.formatters import normalize_name, denormalize_name, parse_datetime
 
 class AppointmentsManager:
 
-    # --- Constants for message and validation ---
+    # --- Constants ---
     APPOINTMENTS_NOT_FOUND = "[Appointments not found]"
     APPOINTMENT_DATA_NOT_FOUND = "[Existing appointment data not found]"
     PROVIDED_NOT_STR = "[Provided argument must be string]"
-    PROVIDED_NOT_INT = "[Provided argument must be integer]"
     PAST_APPT_NOT_ALLOWED = "[Cannot create appointment in the past]"
-    NEGATIVE_NUM_NOT_ALLOWED = "[Negative number not allowed]"
-    WRONG_ID_NUM_LEN = "[Phone ID must contain exactly 8 digits]"
     INVALID_DATE_FORMAT = "[Invalid date format. Use YYYY-MM-DD HH:MM or DD-MM-YYYY HH:MM]"
     INVALID_JSON_STRUCTURE = "[Invalid JSON structure]"
     ERROR_DECODING_JSON = "[Error decoding JSON file]"
@@ -87,62 +86,24 @@ class AppointmentsManager:
 
 
     # --- Utility methods ---
-    def _normalize_name(self, name: str) -> str:
-        if not isinstance(name, str):
-            return None
-        
-        return name.replace(" ", "_").lower()
-
-    def _denormalize_name(self, name: str) -> str:
-        if not isinstance(name, str):
-            return None
-        
-        return name.replace("_", " ").title()
-    
     def _find_appointment_data(self, phone_id: int) -> tuple[int | None, dict | None]:
-        if self._validate_phone_id(phone_id):
-            return None, None
-        
-        if phone_id not in self.appointments:
+        if validate_phone_id(phone_id) or phone_id not in self.appointments:
             return None, None
 
         return phone_id, self.appointments[phone_id]
 
     def _format_appointment(self, phone_id: int, details: dict[str, str]) -> str:
         if not isinstance(phone_id, int) or not isinstance(details, dict):
-            return None
+            return self.APPOINTMENT_DATA_NOT_FOUND
 
-        full_name = self._denormalize_name(f"{details['first_name']} {details['last_name']}")
+        full_name = normalize_name(f"{details['first_name']} {details['last_name']}")
         
         return (
             f"\n🪪 ID: {phone_id}"
             f"\n👤 Name: {full_name}"
-            f"\n💆 Service: {self._denormalize_name(details['service_name'])}"
+            f"\n💆 Service: {normalize_name(details['service_name'])}"
             f"\n🕒 Date: {details['date_time'].strftime('%Y-%m-%d %H:%M')}"
         )
-
-    def _parse_datetime(self, date_time: str) -> datetime | None:
-        try:
-            for fmt in ("%Y-%m-%d %H:%M", "%d-%m-%Y %H:%M", "%d/%m/%Y %H:%M"):
-                try:
-                    return datetime.strptime(date_time, fmt)
-                except ValueError:
-                    continue
-            return None 
-        except Exception:
-            return None
-
-    def _validate_phone_id(self, phone_id: int) -> str | None:
-        if not isinstance(phone_id, int):
-            return self.PROVIDED_NOT_INT
-        
-        if phone_id < 0:
-            return self.NEGATIVE_NUM_NOT_ALLOWED
-        
-        if len(str(phone_id)) != 8:
-            return self.WRONG_ID_NUM_LEN
-        
-        return None
 
 
     # --- Core functionality ---
@@ -150,7 +111,7 @@ class AppointmentsManager:
         if not all(isinstance(arg, str) for arg in [firstname, lastname, service_name, date_time]):
             return self.PROVIDED_NOT_STR
 
-        validation_error = self._validate_phone_id(phone_id)
+        validation_error = validate_phone_id(phone_id)
 
         if validation_error:
             return validation_error
@@ -161,7 +122,7 @@ class AppointmentsManager:
         if not self.services_manager.service_exists(service_name):
             return f"[Service \"{service_name.title()}\" not found]"
         
-        date_time_parsed = self._parse_datetime(date_time)
+        date_time_parsed = parse_datetime(date_time)
 
         if not date_time_parsed:
             return self.INVALID_DATE_FORMAT
@@ -169,7 +130,7 @@ class AppointmentsManager:
         if date_time_parsed < datetime.now():
             return self.PAST_APPT_NOT_ALLOWED
         
-        norm_service_name = self._normalize_name(service_name)
+        norm_service_name = normalize_name(service_name)
 
         self.appointments[phone_id] = {
             "first_name": firstname.lower(),
@@ -181,7 +142,7 @@ class AppointmentsManager:
         return f"[Appointment \"ID: {phone_id}\" successfully added]"
         
     def update_appointment(self, phone_id: int, firstname: str | None = None, lastname: str | None = None, service_name: str | None = None, date_time: str | None = None) -> str:
-        validation_error = self._validate_phone_id(phone_id)
+        validation_error = validate_phone_id(phone_id)
 
         if validation_error:
             return validation_error
@@ -205,11 +166,11 @@ class AppointmentsManager:
             if not self.services_manager.service_exists(service_name):
                 return f"[Service \"{service_name.title()}\" not found]"
             
-            norm_service_name = self._normalize_name(service_name)
+            norm_service_name = normalize_name(service_name)
             appointment["service_name"] = norm_service_name
 
         if date_time is not None:
-            date_time_parsed = self._parse_datetime(date_time)
+            date_time_parsed = parse_datetime(date_time)
 
             if not date_time_parsed:
                 return self.INVALID_DATE_FORMAT
@@ -222,7 +183,7 @@ class AppointmentsManager:
         return f"[Appointment \"ID: {phone_id}\" successfully updated]"
 
     def find_appointment(self, phone_id: int) -> str:
-        validation_error = self._validate_phone_id(phone_id)
+        validation_error = validate_phone_id(phone_id)
 
         if validation_error:
             return validation_error
@@ -235,7 +196,7 @@ class AppointmentsManager:
         return self._format_appointment(ph_id, details)
 
     def remove_appointment(self, phone_id: int) -> str:
-        validation_error = self._validate_phone_id(phone_id)
+        validation_error = validate_phone_id(phone_id)
 
         if validation_error:
             return validation_error
@@ -281,7 +242,7 @@ class AppointmentsManager:
 
             if appointment_date != current_date:
                 current_date = appointment_date
-                print(f"\n📅 {current_date.strftime('%Y-%m-%d')}")
+                print(f"\n{"-" * 25}\n📅 {current_date.strftime('%Y-%m-%d')}")
 
             print(self._format_appointment(phone_id, details))
 

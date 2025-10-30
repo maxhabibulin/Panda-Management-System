@@ -3,7 +3,7 @@ import json
 import data.appointments_data as appointments_data
 from datetime import datetime
 from utils.validators import validate_phone_id
-from utils.formatters import normalize_name, denormalize_name, parse_datetime
+from utils.formatters import normalize_name, parse_datetime
 
 class AppointmentsManager:
 

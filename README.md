@@ -36,6 +36,7 @@ panda_management_system/
 │   ├── validators.py
 │
 ├── main.py                   # Main program entry point
+├── LICENSE                   # MIT License
 └── README.md
 
 ```
@@ -78,6 +79,12 @@ python main.py
 - This is a **learning project** — not intended for production use.
 - All data is stored in Python dictionaries for simplicity.
 - Designed to demonstrate **modular architecture, separation of concerns, and clean OOP principles**.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 

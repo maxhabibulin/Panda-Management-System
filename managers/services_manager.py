@@ -2,6 +2,7 @@ import json
 import copy
 import data.services_data as services_data
 from typing import Iterator
+from utils.formatters import normalize_name, denormalize_name
 
 class ServicesManager:
    """
@@ -63,10 +64,10 @@ class ServicesManager:
       if not isinstance(value, dict):
          raise TypeError("Service category value must be a dictionary")
       
-      self.services[self._normalize_name(category)] = value
+      self.services[normalize_name(category)] = value
 
    def __delitem__(self, category: str) -> None:
-      norm_name = self._normalize_name(category)
+      norm_name = normalize_name(category)
 
       if norm_name not in self.services:
          raise KeyError(f"Category \"{category}\" not found")
@@ -77,7 +78,7 @@ class ServicesManager:
       if not isinstance(service, str):
          return False
       
-      norm_name = self._normalize_name(service)
+      norm_name = normalize_name(service)
 
       for services in self.services.values():
          if norm_name in services:
@@ -114,38 +115,6 @@ class ServicesManager:
    
 
    # --- Utility methods ---
-   def _normalize_name(self, name: str) -> str:
-      """ 
-      Normalize service name to snake_case format.
-
-      Converts user input like "User Input Value" into "user_input_value".
-
-      Args:
-         name (str): Service name input from user.
-
-      Returns:
-         str: Normalized service name in snake_case, or None if input is not string.
-      """
-      if not isinstance(name, str):
-         return None
-      return name.replace(" ", "_").lower()
-   
-   def _denormalize_name(self, name: str) -> str:
-      """
-      Convert normalized snake_case name back to human-readable title format.
-
-      Converts internal format like "user_input_value" back to "User Input Value".
-
-      Args:
-         name (str): Normalized service name in snake_case.
-
-      Returns:
-         str: Human-readable service name in Title Case, or None if input is not string.
-      """
-      if not isinstance(name, str):
-         return None
-      return name.replace("_", " ").title()
-
    def _find_service_data(self, name: str) -> tuple[str | None, dict | None]:
       """
       Locate service in nested structure by name.
@@ -162,11 +131,11 @@ class ServicesManager:
       if not isinstance(name, str):
          return None, None
       
-      norm_name = self._normalize_name(name)
+      norm_name = denormalize_name(name)
 
       for category, services in self.services.items():
          for service_name, details in services.items():
-            if service_name.lower() == norm_name:
+            if service_name.lower() == norm_name.lower():
                return category, details
             
       return None, None
@@ -183,10 +152,10 @@ class ServicesManager:
          str: Formatted string containing service details with emojis.
       """
       if not isinstance(name, str) or not isinstance(details, dict):
-         return None
+         return ""
       
       return (
-        f"{self._denormalize_name(name)}\n"
+        f"{normalize_name(name)}\n"
         f"  💰 Price: {details['price']} {details['currency']}\n"
         f"  ⏱️ Duration: {details['duration']} min\n"
         f"  🌿 Description: {details['description']}\n"
@@ -210,7 +179,7 @@ class ServicesManager:
       if not isinstance(service_name, str):
          return False
       
-      norm_name = self._normalize_name(service_name)
+      norm_name = normalize_name(service_name)
       result = self._find_service_data(norm_name)
 
       if not result:
@@ -237,7 +206,8 @@ class ServicesManager:
       Returns:
          str: Success message or error message if validation fails.
       """
-      if not all(isinstance(arg, str) for arg in [category, name, description, currency]):
+      if not all(isinstance(arg, str) for arg in [category, name, description]) or \
+           (currency is not None and not isinstance(currency, str)):
          return self.PROVIDED_NOT_STR
       
       if not isinstance(price, (int, float)) or price < 0:
@@ -246,8 +216,8 @@ class ServicesManager:
       if not isinstance(duration, (int, float)) or duration <= 0:
          return self.NEGATIVE_NUM_NOT_ALLOWED
       
-      norm_category = self._normalize_name(category)
-      norm_name = self._normalize_name(name)
+      norm_category = normalize_name(category)
+      norm_name = normalize_name(name)
 
       if norm_category not in self.services:
          self.services[norm_category] = {}
@@ -284,8 +254,8 @@ class ServicesManager:
       if not all(isinstance(arg, str) for arg in [category, name]):
          return self.PROVIDED_NOT_STR
       
-      norm_category = self._normalize_name(category)
-      norm_name = self._normalize_name(name)
+      norm_category = normalize_name(category)
+      norm_name = normalize_name(name)
 
       if norm_category not in self.services:
          return f"[Category \"{category.title()}\" not found]"
@@ -372,9 +342,9 @@ class ServicesManager:
       if not category or not details:
          return self.SERVICE_NOT_FOUND
       
-      norm_name = self._normalize_name(name)
+      norm_name = normalize_name(name)
       del self.services[category][norm_name]
-      cat_disp = self._denormalize_name(category)
+      cat_disp = denormalize_name(category)
 
       return f"[Service \"{name.title()}\" removed successfully from \"{cat_disp}\"]"
    
@@ -435,15 +405,14 @@ class ServicesManager:
       """
       Display all available categories and services in formatted view.
       """
-      print(f"\n🌸 Welcome to {self.field_name} 🌸\n")
+      print(f"\n🌸 {self.field_name} Services 🌸\n{24 * '-'}")
 
       for category, services in self.services.items():
-         cat_disp = self._denormalize_name(category)
-         print(f"\n🧺 {cat_disp}:")
+         cat_disp = normalize_name(category)
+         print(f"\n🧺 {cat_disp}:\n{70 * '-'}")
 
          for name, details in services.items():
-            name_disp = self._denormalize_name(name)
-            print(self._format_service(name_disp, details))
+            print(self._format_service(name, details))
 
 
    # --- JSON storage ---  

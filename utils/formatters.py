@@ -1,3 +1,10 @@
+"""
+Text and datetime formatting utilities.
+
+Functions for normalizing service names, handling date formats,
+and ensuring consistent data representation across the application.
+"""
+
 from datetime import datetime
 
 def normalize_name(name: str) -> str:

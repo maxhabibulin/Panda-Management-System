@@ -6,6 +6,21 @@ from utils.validators import validate_phone_id
 from utils.formatters import normalize_name, parse_datetime
 
 class AppointmentsManager:
+    """
+    Manage client appointments: adding, updating, finding, removing,
+    formatting and storing them.
+
+    This class works together with ServicesManager, because every appointment
+    must use an existing service.
+
+    Features:
+    - Add, update, and remove appointments
+    - Validate phone IDs
+    - Validate date formats
+    - Prevent past appointments
+    - Sort and show upcoming appointments
+    - JSON import/export
+    """
 
     # --- Constants ---
     APPOINTMENTS_NOT_FOUND = "[Appointments not found]"
@@ -20,6 +35,14 @@ class AppointmentsManager:
     
     # --- Initialization ---
     def __init__(self, services_manager: object, appointments: dict | None = None):
+        """
+        Initialize the AppointmentsManager.
+
+        Args:
+            services_manager (object): Reference to ServicesManager for service validation.
+            appointments (dict | None): Optional initial appointment data.
+                                         If None, default demo data is loaded.
+        """
         self.services_manager = services_manager
         self.appointments = copy.deepcopy(
             appointments if appointments is not None else appointments_data.appointments
@@ -28,21 +51,56 @@ class AppointmentsManager:
 
     #  --- Magic methods ---
     def __len__(self) -> int:
+        """
+        Return the total number of appointments.
+
+        Returns:
+            int: Count of appointments.
+        """
         return len(self.appointments)
 
     def __iter__(self):
+        """
+        Iterate through all appointment IDs.
+
+        Returns:
+            iterator: Iterator over phone IDs.
+        """
         return iter(self.appointments)
 
     def __getitem__(self, phone_id: int) -> dict:
-       if not isinstance(phone_id, int):
-           raise TypeError("Phone ID must be an integer")
+        """
+        Get appointment details by phone ID.
+
+        Args:
+            phone_id (int): Appointment ID.
+
+        Returns:
+            dict: Appointment details.
+
+        Raises:
+            TypeError: If ID is not integer.
+            KeyError: If ID does not exist.
+        """
+        if not isinstance(phone_id, int):
+            raise TypeError("Phone ID must be an integer")
        
-       if phone_id not in self.appointments:
-           raise KeyError(f"Appointments with ID {phone_id} not found")
+        if phone_id not in self.appointments:
+            raise KeyError(f"Appointments with ID {phone_id} not found")
        
-       return self.appointments[phone_id]
+        return self.appointments[phone_id]
 
     def __setitem__(self, phone_id: int, details: dict) -> None:
+        """
+        Set (replace) appointment details by phone ID.
+
+        Args:
+            phone_id (int): Appointment ID.
+            details (dict): Appointment data.
+
+        Raises:
+            TypeError: If arguments have wrong types.
+        """
         if not isinstance(phone_id, int):
             raise TypeError("Phone ID must be an integer")
         
@@ -52,27 +110,72 @@ class AppointmentsManager:
         self.appointments[phone_id] = details
 
     def __delitem__(self, phone_id: int) -> None:
+        """
+        Delete appointment by ID.
+
+        Args:
+            phone_id (int): Appointment ID.
+
+        Raises:
+            KeyError: If appointment does not exist.
+        """
         if phone_id not in self.appointments:
             raise KeyError(f"Appointment with ID {phone_id} not found")
 
         del self.appointments[phone_id]
 
     def __eq__(self, other) -> bool:
+        """
+        Compare two AppointmentsManager objects.
+
+        Args:
+            other (AppointmentsManager): Object to compare.
+
+        Returns:
+            bool: True if both contain identical appointments.
+        """
         if not isinstance(other, AppointmentsManager):
             return NotImplemented
         
         return self.appointments == other.appointments
 
     def __contains__(self, phone_id: int) -> bool:
+        """
+        Check if an appointment exists.
+
+        Args:
+            phone_id (int): ID to check.
+
+        Returns:
+            bool: True if exists.
+        """
         return isinstance(phone_id, int) and phone_id in self.appointments
 
     def __bool__(self) -> bool:
+        """
+        Check if there are any appointments.
+
+        Returns:
+            bool: True if not empty.
+        """
         return bool(self.appointments)
 
     def __str__(self) -> str:
+        """
+        Return a readable overview.
+
+        Returns:
+            str: Summary of appointments.
+        """
         return f"Total appointments: {len(self.appointments)}"
 
     def __repr__(self) -> str:
+        """
+        Developer-friendly object representation.
+
+        Returns:
+            str: Summary including upcoming appointments count.
+        """
         total_appointments = len(self.appointments)
         upcoming_appointments = len([
             a for a in self.appointments.values()
@@ -87,12 +190,31 @@ class AppointmentsManager:
 
     # --- Utility methods ---
     def _find_appointment_data(self, phone_id: int) -> tuple[int | None, dict | None]:
+        """
+        Find appointment data by ID.
+
+        Args:
+            phone_id (int): Appointment ID.
+
+        Returns:
+            tuple[int | None, dict | None]: (ID, details) or (None, None).
+        """
         if validate_phone_id(phone_id) or phone_id not in self.appointments:
             return None, None
 
         return phone_id, self.appointments[phone_id]
 
     def _format_appointment(self, phone_id: int, details: dict[str, str]) -> str:
+        """
+        Format appointment into a readable text block.
+
+        Args:
+            phone_id (int): Appointment ID.
+            details (dict): Appointment details.
+
+        Returns:
+            str: Formatted appointment text.
+        """
         if not isinstance(phone_id, int) or not isinstance(details, dict):
             return self.APPOINTMENT_DATA_NOT_FOUND
 
@@ -108,6 +230,19 @@ class AppointmentsManager:
 
     # --- Core functionality ---
     def add_appointment(self, phone_id: int, firstname: str, lastname: str, service_name: str, date_time: str) -> str:
+        """
+        Add a new appointment.
+
+        Args:
+            phone_id (int): Unique appointment ID.
+            firstname (str): Client first name.
+            lastname (str): Client last name.
+            service_name (str): Name of the service.
+            date_time (str): Appointment date (multiple formats supported).
+
+        Returns:
+            str: Success or error message.
+        """
         if not all(isinstance(arg, str) for arg in [firstname, lastname, service_name, date_time]):
             return self.PROVIDED_NOT_STR
 
@@ -142,6 +277,19 @@ class AppointmentsManager:
         return f"[Appointment \"ID: {phone_id}\" successfully added]"
         
     def update_appointment(self, phone_id: int, firstname: str | None = None, lastname: str | None = None, service_name: str | None = None, date_time: str | None = None) -> str:
+        """
+        Update existing appointment fields.
+
+        Args:
+            phone_id (int): Appointment ID.
+            firstname (str | None): New first name.
+            lastname (str | None): New last name.
+            service_name (str | None): New service.
+            date_time (str | None): New date and time.
+
+        Returns:
+            str: Success or error message.
+        """
         validation_error = validate_phone_id(phone_id)
 
         if validation_error:
@@ -183,6 +331,15 @@ class AppointmentsManager:
         return f"[Appointment \"ID: {phone_id}\" successfully updated]"
 
     def find_appointment(self, phone_id: int) -> str:
+        """
+        Find and format appointment by ID.
+
+        Args:
+            phone_id (int): Appointment ID.
+
+        Returns:
+            str: Formatted details or an error message.
+        """
         validation_error = validate_phone_id(phone_id)
 
         if validation_error:
@@ -196,6 +353,15 @@ class AppointmentsManager:
         return self._format_appointment(ph_id, details)
 
     def remove_appointment(self, phone_id: int) -> str:
+        """
+        Remove an appointment by ID.
+
+        Args:
+            phone_id (int): Appointment ID.
+
+        Returns:
+            str: Success or error message.
+        """
         validation_error = validate_phone_id(phone_id)
 
         if validation_error:
@@ -209,6 +375,16 @@ class AppointmentsManager:
         return f"[Appointment for \"ID: {phone_id}\" removed successfully]"
 
     def show_appointments(self, include_past: bool = False) -> None:
+        """
+        Display all appointments.
+
+        Args:
+            include_past (bool): If True, show all appointments.
+                                 If False, show only upcoming ones.
+
+        Notes:
+            Appointments are grouped by date and sorted by time.
+        """
         if not self.appointments:
             print(self.APPOINTMENTS_NOT_FOUND)
             return
@@ -249,6 +425,15 @@ class AppointmentsManager:
 
     # -- JSON storage --
     def save_appointments_to_json(self, filename: str = "appointments.json") -> str:
+        """
+        Save all appointments to a JSON file.
+
+        Args:
+            filename (str): Output filename.
+
+        Returns:
+            str: Confirmation message.
+        """
         serializable_data = {}
 
         for phone_id, details in self.appointments.items():
@@ -261,6 +446,15 @@ class AppointmentsManager:
         return f"[Appointments saved to \"{filename}\"]"
 
     def load_appointments_from_json(self, filename: str = "appointments.json") -> str:
+        """
+        Load appointments from JSON file.
+
+        Args:
+            filename (str): Input filename.
+
+        Returns:
+            str: Confirmation or error message.
+        """
         try:
             with open(filename, "r", encoding="utf-8") as file:
                 data = json.load(file)

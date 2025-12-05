@@ -3,8 +3,20 @@ from utils.formatters import normalize_name
 from utils.validators import validate_phone_id, validate_positive_int
 
 class RecommendationsManager:
+    """
+    Analyze appointment data to generate service recommendations.
 
-     # --- Constants ---
+    This class works together with AppointmentsManager to analyze booking
+    patterns and suggest services to clients.
+
+    Features:
+    - Find most popular services across all bookings
+    - Generate personalized recommendations for specific clients
+    - Display formatted recommendation reports
+    - Validate input parameters
+    """
+
+    # --- Constants ---
     APPOINTMENT_DATA_NOT_FOUND = "[Existing appointment data not found]"
     LINE_SEPARATOR = "-" * 47
     
@@ -15,6 +27,15 @@ class RecommendationsManager:
 
     # --- Core functionality ---
     def get_popular_services(self, top_n: int = 3) -> list[tuple[str, int]]:
+        """
+        Get the most frequently booked services.
+
+        Args:
+            top_n (int): Number of top services to return (default: 3).
+
+        Returns:
+            list[tuple[str, int]]: List of (service_name, count) pairs.
+        """
         validation_error = validate_positive_int(top_n, "top_n")
 
         if validation_error:
@@ -34,6 +55,15 @@ class RecommendationsManager:
         return service_counts.most_common(top_n)
     
     def recommend_for_customer(self, phone_id: int) -> None:
+        """
+        Generate personalized recommendations for a specific client.
+
+        Args:
+            phone_id (int): Client's phone number as ID.
+
+        Returns:
+            None: Prints formatted recommendations to console.
+        """
         validation_error = validate_phone_id(phone_id)
         if validation_error:
             print(validation_error)
@@ -104,6 +134,15 @@ class RecommendationsManager:
         print(f"{47 * "-"}")
 
     def show_recommendations(self, top_n: int = 3) -> None:
+        """
+        Display popular services report.
+
+        Args:
+            top_n (int): Number of services to show (default: 3).
+
+        Returns:
+            None: Prints formatted report with booking statistics.
+        """
         popular_services = self.get_popular_services(top_n)
 
         print(

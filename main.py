@@ -1,3 +1,19 @@
+"""
+Panda Spa - Command Line Interface
+
+Main entry point for the Panda Spa Management System.
+Provides a simple menu-driven interface to interact with all system modules.
+
+Modules used:
+- ServicesManager: Manage spa services
+- AppointmentsManager: Handle client bookings  
+- FinanceManager: Track income and expenses
+- RecommendationsManager: Generate service suggestions
+
+Usage:
+Run this script to start the interactive CLI menu.
+"""
+
 import os
 from managers.services_manager import ServicesManager
 from managers.appointments_manager import AppointmentsManager

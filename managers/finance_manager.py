@@ -2,11 +2,28 @@ from data.expenses_data import expenses
 from datetime import datetime
 
 class FinanceManager:
+    """
+    Handle financial calculations.
+
+    Includes:
+    - Income calculation
+    - Expense tracking
+    - Net profit calculation
+    - Summary report display
+    """
+     
     # --- Constants ---
     LINE_SEPARATOR = "-" * 40
     
     # --- Initialization ---
     def __init__(self, services_manager: object, appointments_manager: object):
+        """
+        Initialize FinanceManager.
+
+        Args:
+            services_manager (object): Provides service prices.
+            appointments_manager (object): Provides appointment records.
+        """
         self.services_manager = services_manager
         self.appointments_manager = appointments_manager
         self.expenses = expenses
@@ -14,6 +31,12 @@ class FinanceManager:
 
     # --- Core functionality ---
     def get_total_income(self) -> float:
+        """
+        Calculate total income.
+
+        Returns:
+            float: Sum of all earned income from appointments.
+        """
         income = 0.0
 
         for details in self.appointments_manager.appointments.values():
@@ -26,12 +49,34 @@ class FinanceManager:
         return round(income, 2)
     
     def get_total_expenses(self) -> float:
+        """
+        Calculate total expenses.
+
+        Returns:
+            float: Sum of all fixed expenses.
+        """
         return sum(self.expenses.values())
 
     def get_net_profit(self) -> float:
+        """
+        Calculate net profit.
+
+        Returns:
+            float: Income minus expenses.
+        """
         return round(self.get_total_income() - self.get_total_expenses(), 2)
     
     def show_finances(self) -> None:
+        """
+        Display a formatted financial report.
+
+        Includes:
+        - Income
+        - Expenses
+        - Net profit
+        - Profit margin
+        - Status and efficiency indicators
+        """
         currency = self.services_manager.default_currency
         field_name = self.services_manager.field_name
 

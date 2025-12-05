@@ -6,17 +6,18 @@ from utils.formatters import normalize_name, denormalize_name
 
 class ServicesManager:
    """
-    Manages services: adding, finding, updating, removing, and storing them.
+   Manages services: adding, finding, updating, removing, and storing them.
 
-    The class can be reused across multiple projects. It supports category-based organization and allows saving/loading data to JSON files.
+   The class can be reused across multiple projects. 
+   It supports category-based organization and allows saving/loading data to JSON files.
 
-    Features:
-    - Category-based service organization
-    - Add, update, find, and remove services
-    - Price and currency management
-    - JSON import/export
-    - Name normalization
-    """
+   Features:
+   - Category-based service organization
+   - Add, update, find, and remove services
+   - Price and currency management
+   - JSON import/export
+   - Name normalization
+   """
 
    # --- Constants for message and validation ---
    SERVICE_NOT_FOUND = "[Service not found]"
@@ -29,12 +30,13 @@ class ServicesManager:
    # ---  Initialization ---
    def __init__(self, services: dict | None = None, field_name: str = "Panda Spa", default_currency: str = "EUR"):
       """ 
-      Initialize a ServicesManager object.
+      Initialize the ServicesManager.
 
       Args:
-         services (dict | None): Optional custom service data. If None, 
-                                 uses default services from `services_data`.
+         services (dict | None): Initial service data. If None, 
+                                 default data is used.
          field_name (str): The display name of the system.
+         default_currency (str): Currency applied to all services.
       """
       self.field_name = field_name
       self.default_currency = default_currency
@@ -46,13 +48,37 @@ class ServicesManager:
 
    # --- Magic methods ---
    def __len__(self) -> int:
+      """
+      Return the number of services.
+        
+      Returns:
+         int: Total count of services.
+      """
       return sum(len(services) for services in self.services.values())
    
    def __iter__(self) -> Iterator[str]:
+      """
+      Iterate through all service names.
+
+      Returns:
+         Iterator[str]: Iterator over service names.
+      """
       for services in self.services.values():
          yield from services.keys()
    
    def __getitem__(self, service: str) -> dict:
+      """
+      Get details of a service by name.
+
+      Args:
+         service (str): Service name.
+
+      Returns:
+            dict: Service details.
+
+      Raises:
+         KeyError: If the service is not found.
+      """
       _, details = self._find_service_data(service)
       
       if not details:
@@ -61,12 +87,31 @@ class ServicesManager:
       return details
    
    def __setitem__(self, category: str, value: dict) -> None:
+      """
+      Assign a full category with services.
+
+      Args:
+         category (str): Category name.
+         value (dict): Dictionary of services.
+
+      Raises:
+         TypeError: If value is not a dictionary.
+      """
       if not isinstance(value, dict):
          raise TypeError("Service category value must be a dictionary")
       
       self.services[normalize_name(category)] = value
 
    def __delitem__(self, category: str) -> None:
+      """
+      Delete a category.
+
+      Args:
+         category (str): Category name.
+
+      Raises:
+         KeyError: If category does not exist.
+      """
       norm_name = normalize_name(category)
 
       if norm_name not in self.services:
@@ -75,6 +120,15 @@ class ServicesManager:
       del self.services[norm_name]
 
    def __contains__(self, service: str) -> bool:
+      """
+      Check if a service exists.
+
+      Args:
+         service (str): Service name.
+
+      Returns:
+         bool: True if the service exists, False otherwise.
+      """
       if not isinstance(service, str):
          return False
       
@@ -87,25 +141,46 @@ class ServicesManager:
       return False
 
    def __eq__(self, other) -> bool:
+      """
+      Compare two ServicesManager objects.
+
+      Args:
+         other (ServicesManager): Object to compare with.
+
+      Returns:
+         bool: True if equal, False otherwise.
+      """
       if not isinstance(other, ServicesManager):
          return NotImplemented
       
       return self.services == other.services
 
    def __bool__(self) -> bool:
+      """
+      Check if manager has any services.
+
+      Returns:
+         bool: True if not empty.
+      """
       return bool(self.services)
 
    def __str__(self) -> str:
+      """
+      Return a readable summary.
+
+      Returns:
+         str: Summary text.
+       """
       total_services = sum(len(s) for s in self.services.values())
 
       return f"{self.field_name} - {len(self.services)} categories, {total_services} services"
 
    def __repr__(self) -> str:
       """
-      Developer-friendly string representation of the object.
+      Return technical representation for debugging.
 
       Returns:
-         str: Summary showing the field name, number of categories, and total services.
+         str: Developer-friendly representation.
       """
       total_services = sum(len(s) for s in self.services.values())
       return (
@@ -117,17 +192,14 @@ class ServicesManager:
    # --- Utility methods ---
    def _find_service_data(self, name: str) -> tuple[str | None, dict | None]:
       """
-      Locate service in nested structure by name.
+      Find a service and its category.
 
       Args:
-         name (str): Name of the service to find.
+         name (str): Service name (human-readable format).
 
       Returns:
-         tuple[str | None, dict | None]: 
-         - category (str): The category where the service is found.
-         - details (dict): The service details with price, currency, duration, description.
-         Returns (None, None) if not found or input invalid.
-      """
+         tuple[str | None, dict | None]: (category, service details) or (None, None).
+      """ 
       if not isinstance(name, str):
          return None, None
       
@@ -142,14 +214,14 @@ class ServicesManager:
    
    def _format_service(self, name: str, details: dict[str, str | int | float]) -> str:
       """
-      Format service details into readable string representation.
+      Format service details for display.
 
       Args:
-         name (str): Name of the service.
-         details (dict): Service details with keys: price, currency, duration, description.
+         name (str): Service name.
+         details (dict): Service attributes.
 
       Returns:
-         str: Formatted string containing service details with emojis.
+         str: Formatted multiline text.
       """
       if not isinstance(name, str) or not isinstance(details, dict):
          return ""
@@ -162,19 +234,22 @@ class ServicesManager:
       )
    
    def _apply_default_currency(self) -> None:
+      """
+      Apply the default currency to all services.
+      """
       for category in self.services.values():
          for service in category.values():
             service["currency"] = self.default_currency
 
    def service_exists(self, service_name: str) -> bool:
       """
-      Check if a given service exists in the system.
+      Check if a service exists.
 
       Args:
-         service_name (str): The name of the service (case-insensitive, spaces allowed).
+         service_name (str): Name to check.
 
       Returns:
-         bool: True if the service exists, False otherwise.
+         bool: True if service exists.
       """
       if not isinstance(service_name, str):
          return False
@@ -193,18 +268,18 @@ class ServicesManager:
    # --- Core functionality ---
    def add_service(self, category: str, name: str, price: float, duration: int, description: str, currency: str = None) -> str:
       """
-      Add a new service to the collection.
+      Add a new service.
 
       Args:
-         category (str): Category of the service.
-         name (str): Name of the service.
-         price (float): Price of the service.
-         duration (int): Duration of the service in minutes.
-         description (str): Short description of the service.
+         category (str): Category name.
+         name (str): Service name.
+         price (float): Price value.
+         duration (int): Duration in minutes.
+         description (str): Short description.
          currency (str, optional): Currency type. Defaults to "EUR".
 
       Returns:
-         str: Success message or error message if validation fails.
+         str: Success or error message.
       """
       if not all(isinstance(arg, str) for arg in [category, name, description]) or \
            (currency is not None and not isinstance(currency, str)):
@@ -238,18 +313,18 @@ class ServicesManager:
    
    def update_service(self, category: str, name: str, price: float | None = None, duration: int | None = None, description: str | None = None, currency: str | None = None) -> str:
       """
-      Update existing service details.
+      Update existing service.
 
       Args:
-         category (str): Category of the service.
-         name (str): Name of the service to update.
+         category (str): Category name.
+         name (str): Service name.
          price (float | None, optional): New price. Defaults to None.
          duration (int | None, optional): New duration in minutes. Defaults to None.
          description (str | None, optional): New description. Defaults to None.
          currency (str | None, optional): New currency. Defaults to None.
 
       Returns:
-         str: Success message or error message if service not found or validation fails.
+         str: Success or error message.
       """
       if not all(isinstance(arg, str) for arg in [category, name]):
          return self.PROVIDED_NOT_STR
@@ -289,13 +364,13 @@ class ServicesManager:
 
    def find_service(self, name: str) -> str:
       """
-      Find and return formatted details of a service by name.
+      Get formatted details of a service.
 
       Args:
-         name (str): Name of the service to find.
+          name (str): Service name.
 
       Returns:
-         str: Formatted service details or error message if not found.
+         str: Formatted information or an error message.
       """
       if not isinstance(name, str):
          return self.PROVIDED_NOT_STR
@@ -309,13 +384,13 @@ class ServicesManager:
 
    def get_service_data(self, name: str) -> dict | None:
       """
-      _
+      Get raw service data.
 
       Args:
-         _
+         name (str): Service name.
 
       Returns:
-         _
+            dict | None: Service details, or None if not found.
       """
       if not isinstance(name, str):
          return None
@@ -326,13 +401,13 @@ class ServicesManager:
 
    def remove_service(self, name: str) -> str:
       """
-      Remove a service by name.
+      Remove a service.
 
       Args:
-         name (str): Name of the service to remove.
+         name (str): Service name.
 
       Returns:
-         str: Success message or error message if service not found.
+         str: Success or error message.
       """
       if not isinstance(name, str):
          return self.PROVIDED_NOT_STR
@@ -353,12 +428,12 @@ class ServicesManager:
       Update the price and/or currency of an existing service.
 
       Args:
-         name (str): Name of the service to update.
+         name (str): Service name.
          new_price (float | None, optional): New price value. Defaults to None.
-         currency (str | None, optional): New currency type. Defaults to None.
+         currency (str | None, optional): New currency. Defaults to None.
 
       Returns:
-         str: Success message or error message if service not found or input invalid.
+         str: Success or error message.
       """
       if not isinstance(name, str):
          return self.PROVIDED_NOT_STR
@@ -382,13 +457,13 @@ class ServicesManager:
    
    def change_currency_for_all(self, new_currency: str) -> str:
       """
-      Change the currency for all existing services.
+      Update currency for all services.
 
       Args:
-         new_currency (str): New currency type to apply (e.g., "USD", "DKK").
+         new_currency (str): New currency type.
 
       Returns:
-         str: Confirmation message or error if input type is invalid.
+         str: Confirmation message.
       """
       if not isinstance(new_currency, str):
          return self.PROVIDED_NOT_STR
@@ -403,7 +478,7 @@ class ServicesManager:
 
    def show_services(self) -> None:
       """
-      Display all available categories and services in formatted view.
+      Print an overview of all categories and services.
       """
       print(f"\n🌸 {self.field_name} Services 🌸\n{24 * '-'}")
 
@@ -418,13 +493,13 @@ class ServicesManager:
    # --- JSON storage ---  
    def save_services_to_json(self, filename: str = "services.json") -> str:
       """
-      Save all current services to a JSON file.
+      Save services to JSON.
 
       Args:
-         filename (str, optional): File name for saving. Defaults to "services.json".
+         filename (str): Output file name.
 
       Returns:
-         str: Confirmation message after saving.
+         str: Confirmation message.
       """
       with open(filename, "w", encoding="utf-8") as file:
          json.dump(self.services, file, indent=4, ensure_ascii=False)
@@ -436,10 +511,10 @@ class ServicesManager:
       Load services from a JSON file.
 
       Args:
-         filename (str, optional): File name to load. Defaults to "services.json".
+         filename (str): Input file name.
 
       Returns:
-         str: Confirmation message or error if file is missing or invalid.
+         str: Confirmation or error message.
       """
       try:
          with open(filename, "r", encoding="utf-8") as file:

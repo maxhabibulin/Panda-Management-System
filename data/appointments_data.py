@@ -1,3 +1,26 @@
+"""
+Test appointment data for development and demonstration.
+
+This module provides a dataset of appointments spanning
+past, present, and future dates. Used to test appointment filtering,
+sorting, and recommendation systems.
+
+Structure:
+{
+    phone_id: {
+        "first_name": str,
+        "last_name": str,
+        "service_name": str,
+        "date_time": datetime
+    }
+}
+
+Time categories:
+- Past: 5–15 days ago (for historical data testing)
+- Boundary: ±1 hour from now (for edge case testing)  
+- Future: 1–14 days ahead (for upcoming appointments)
+"""
+
 from datetime import datetime, timedelta
 
 now = datetime.now()

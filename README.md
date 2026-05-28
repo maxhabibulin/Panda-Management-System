@@ -90,7 +90,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Author
 
-**Max Habibulin**
+**Maksims Habibulins**
 
 - 🐱 GitHub: [@maxhabibulin](https://github.com/maxhabibulin)
 - 📧 Email: maxhabibulin@gmail.com
